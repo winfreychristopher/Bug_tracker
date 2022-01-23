@@ -1,8 +1,9 @@
 const client = require("./client");
 const bcrypt = require("bcrypt");
+const SALT_COUNT = 10;
 
 async function createUser({ username, password, email, admin }) {
-	const hashPass = bcrypt.hashSync(password, 10);
+	const hashPass = bcrypt.hashSync(password, SALT_COUNT);
 	try {
 		const {
 			rows: [user],
@@ -13,7 +14,7 @@ async function createUser({ username, password, email, admin }) {
       ON CONFLICT ( username ) DO NOTHING
       RETURNING *;
     `,
-			[username, password, email, admin]
+			[username, hashPass, email, admin]
 		);
 		delete user.password;
 		return user;
@@ -30,10 +31,11 @@ async function getUserByUsername(username) {
 			`
       SELECT *
       FROM users
-      WHERE username = $1;
+      WHERE username=$1;
     `,
 			[username]
 		);
+		console.log(user, "getuserbyusername");
 		return user;
 	} catch (error) {
 		throw error;
@@ -53,6 +55,7 @@ async function getUserById(id) {
 			[id]
 		);
 		delete user.password;
+		console.log(user, "getuserbyid!!!");
 		return user;
 	} catch (error) {
 		throw error;
@@ -62,8 +65,10 @@ async function getUserById(id) {
 async function getUser({ username, password }) {
 	try {
 		let user = await getUserByUsername(username);
+		console.log(user, "getuserbyusername inside getuser!");
 		if (bcrypt.compareSync(password, user.password)) {
 			delete user.password;
+			console.log(user, "USER@@@");
 			return user;
 		}
 	} catch (error) {
@@ -75,4 +80,5 @@ module.exports = {
 	createUser,
 	getUserById,
 	getUser,
+	getUserByUsername,
 };
