@@ -130,6 +130,24 @@ async function getTicketsByProjectId(id) {
 	}
 }
 
+async function getTicketsByUserId(id) {
+	try {
+		const {
+			rows: [tickets],
+		} = await client.query(
+			`
+			SELECT *
+			FROM tickets
+			WHERE "assignedId"=$1;
+		`,
+			[id]
+		);
+		return tickets;
+	} catch (error) {
+		throw error;
+	}
+}
+
 async function updateTickets({
 	id,
 	title,
@@ -234,6 +252,7 @@ module.exports = {
 	getOpenTickets,
 	getTicketsById,
 	getTicketsByProjectId,
+	getTicketsByUserId,
 	getInProgressTickets,
 	updateTickets,
 	destroyTicket,
